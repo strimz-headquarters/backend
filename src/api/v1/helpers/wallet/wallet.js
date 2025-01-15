@@ -67,8 +67,8 @@ exports.computeAddress = () => {
 
   return {
     publicKey: starkKeyPub,
-    accountClassHash: OZaccountClassHash,
-    accountConstructorCallData: OZaccountConstructorCallData,
+    classHash: OZaccountClassHash,
+    constructorCallData: OZaccountConstructorCallData,
     address: OZcontractAddress,
     privateKey,
   };

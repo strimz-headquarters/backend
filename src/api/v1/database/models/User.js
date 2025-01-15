@@ -1,10 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 const { HashPassword } = require("../../helpers");
-const {
-  computeAddress,
-  encryptPvKey,
-} = require("../../helpers/wallet/walletEncryption");
+const { computeAddress, encryptPvKey } = require("../../helpers/wallet/wallet");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**

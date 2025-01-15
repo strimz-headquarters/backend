@@ -5,6 +5,9 @@ const { HashPassword } = require("../../helpers");
 const jwt = require("jsonwebtoken");
 const mailService = require("../../helpers/email/EmailConfig");
 const crypto = require("crypto");
+const {
+  deploy_account,
+} = require("../../controllers/contract/contract.controller");
 const GenerateToken = async (uid) => {
   const access = "auth";
   const accessToken = jwt.sign(
@@ -143,6 +146,12 @@ exports.verify = async (id) => {
     const user = await User.getUser(token.userId);
 
     if (!user.verified) {
+      const account_payload = {
+        classHash: user.wallet.classHash,
+        constructorCalldata: user.wallet.constructorCallData,
+        addressSalt: user.wallet.publicKey,
+      };
+      await deploy_account(account_payload);
       await user.update({ verified: true });
     }
     const accessToken = await GenerateToken(user.id);
