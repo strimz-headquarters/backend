@@ -5,12 +5,30 @@ const cors = require("cors");
 const morgan = require("morgan");
 const AppRoutes = require("./src/api/v1/routes");
 const app = express();
+const cron = require("node-cron");
 
 app.use(cors({ origin: "*" }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(morgan("common"));
 app.use("/api/v1", AppRoutes);
+
+async function handle_cron() {
+  try {
+    /// check for due stream
+  } catch (error) {}
+}
+
+// Schedule the cron job for 12 AM UTC every day
+cron.schedule(
+  "0 0 * * *",
+  async () => {
+    await handle_cron();
+  },
+  {
+    timezone: "UTC", // Ensure the timezone is set to UTC
+  }
+);
 
 app.get("/", async (req, res) => {
   res.status(200).json({
