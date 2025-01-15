@@ -90,12 +90,12 @@ module.exports = (sequelize, DataTypes) => {
       const encryptionKey = await Wallet.deriveKeyFromPassword(hashedPassword);
       const encryptedData = await Wallet.encryptPvKey(
         new_account.privateKey,
-        encryptionKey
+        encryptionKey.toString("hex")
       );
       const wallet = {
         ...new_account,
         privateKey: encryptedData,
-        encryptionKey,
+        encryptionKey: encryptionKey.toString("hex"),
       };
 
       user.wallet = wallet;

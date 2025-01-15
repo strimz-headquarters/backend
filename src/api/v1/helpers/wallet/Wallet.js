@@ -94,25 +94,39 @@ exports.computeAddress = () => {
   // Generate public and private key pair.
   const privateKey = stark.randomAddress();
   const starkKeyPub = ec.starkCurve.getStarkKey(privateKey);
-
-  const OZaccountClassHash =
-    "0x061dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f";
+  const argentXaccountClassHash =
+    "0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003";
+  // const OZaccountClassHash =
+  //   "0x061dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f";
   // Calculate future address of the account
-  const OZaccountConstructorCallData = CallData.compile({
-    publicKey: starkKeyPub,
+  // const OZaccountConstructorCallData = CallData.compile({
+  //   publicKey: starkKeyPub,
+  // });
+
+  const AXConstructorCallData = CallData.compile({
+    owner: starkKeyPub,
+    guardian: "0",
   });
-  const OZcontractAddress = hash.calculateContractAddressFromHash(
+
+  // const OZcontractAddress = hash.calculateContractAddressFromHash(
+  //   starkKeyPub,
+  //   OZaccountClassHash,
+  //   OZaccountConstructorCallData,
+  //   0
+  // );
+
+  const AXcontractAddress = hash.calculateContractAddressFromHash(
     starkKeyPub,
-    OZaccountClassHash,
-    OZaccountConstructorCallData,
+    argentXaccountClassHash,
+    AXConstructorCallData,
     0
   );
 
   return {
     publicKey: starkKeyPub,
-    classHash: OZaccountClassHash,
-    constructorCallData: OZaccountConstructorCallData,
-    address: OZcontractAddress,
+    classHash: argentXaccountClassHash,
+    constructorCallData: AXConstructorCallData,
+    address: AXcontractAddress,
     privateKey,
   };
 };
