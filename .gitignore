@@ -14,5 +14,5 @@ docs/
 .env
 
 node_modules
-*.sqlite
+# dev.sqlite
 test.js
