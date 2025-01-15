@@ -128,6 +128,7 @@ exports.signUp = async (data) => {
     await mailService.sendMail(newUser.email, ``, emailHTML);
     return CheckDBResponse.successResponse({
       ...newUser.dataValues,
+      wallet: undefined,
       password: undefined,
       createdAt: undefined,
       updatedAt: undefined,

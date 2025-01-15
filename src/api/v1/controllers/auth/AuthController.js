@@ -13,7 +13,6 @@ exports.signUp = async (req, res, next) => {
     const newUser = await AuthService.signUp({
       ...data,
       verified: undefined,
-      level: 0,
     });
     const { success, ...result } = newUser;
     if (success) {

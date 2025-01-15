@@ -29,8 +29,7 @@ exports.addUser = [
         throw new Error("user already exists with this email address");
       }
     }),
-  body("firstname").notEmpty().withMessage("first name is required").bail(),
-  body("lastname").notEmpty().withMessage("last name is required").bail(),
+
   body("password")
     .notEmpty()
     .withMessage("password is required")

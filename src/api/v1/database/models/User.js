@@ -1,7 +1,6 @@
 "use strict";
 const { Model } = require("sequelize");
-const { HashPassword } = require("../../helpers");
-const { computeAddress, encryptPvKey } = require("../../helpers/wallet/wallet");
+const { HashPassword, Wallet } = require("../../helpers");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -17,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
       return {
         ...this.get(),
         accessToken: undefined,
+        wallet: undefined,
         password: undefined,
         createdAt: undefined,
         updatedAt: undefined,
@@ -84,17 +84,26 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   User.beforeCreate(async (user) => {
-    const hashedPassword = await HashPassword(user?.password);
-    const new_account = computeAddress();
-    const encryptedData = encryptPvKey(new_account.privateKey, user?.password);
-    const wallet = {
-      ...new_account,
-      privateKey: encryptedData,
-    };
+    try {
+      const hashedPassword = await HashPassword(user?.password);
+      const new_account = Wallet.computeAddress();
+      const encryptionKey = await Wallet.deriveKeyFromPassword(hashedPassword);
+      const encryptedData = await Wallet.encryptPvKey(
+        new_account.privateKey,
+        encryptionKey
+      );
+      const wallet = {
+        ...new_account,
+        privateKey: encryptedData,
+        encryptionKey,
+      };
 
-    user.wallet = wallet;
+      user.wallet = wallet;
 
-    user.password = hashedPassword;
+      user.password = hashedPassword;
+    } catch (error) {
+      throw error;
+    }
   });
 
   return User;
