@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs");
-const { CheckDBResponse } = require("../../helpers");
+const { CheckDBResponse, Wallet } = require("../../helpers");
 const { User, Token } = require("../../database/classes");
 const { HashPassword } = require("../../helpers");
 const jwt = require("jsonwebtoken");
@@ -7,7 +7,9 @@ const mailService = require("../../helpers/email/EmailConfig");
 const crypto = require("crypto");
 const {
   deploy_account,
+  transfer_deployment_fee,
 } = require("../../controllers/contract/contract.controller");
+const { RpcProvider, Account, num, RPC } = require("starknet");
 const GenerateToken = async (uid) => {
   const access = "auth";
   const accessToken = jwt.sign(
@@ -151,14 +153,42 @@ exports.verify = async (id) => {
         classHash: user.wallet.classHash,
         constructorCalldata: user.wallet.constructorCallData,
         addressSalt: user.wallet.publicKey,
+        contractAddress: user.wallet.address,
       };
-      await deploy_account(account_payload);
+
+      const RPC_URL = process.env.RPC_URL;
+      const PRIVATE_KEY = await Wallet.decryptPvKey(
+        user.wallet.privateKey.encryptedData,
+        user.wallet.encryptionKey.toString("hex"),
+        user.wallet.privateKey.salt,
+        user.wallet.privateKey.iv
+      );
+
+      const ACCOUNT_ADDRESS = user.wallet.address;
+
+      const provider = new RpcProvider({ nodeUrl: `${RPC_URL}` });
+      const account = new Account(provider, ACCOUNT_ADDRESS, PRIVATE_KEY);
+
+      const fee = await account.estimateAccountDeployFee(account_payload, {});
+
+      const suc = await transfer_deployment_fee(
+        ACCOUNT_ADDRESS,
+        (Number(fee.suggestedMaxFee) * 2).toString()
+      );
+
+      if (!suc) {
+        return CheckDBResponse.errorResponse("Transfer failed");
+      }
+
+      await account.deployAccount(account_payload);
+
       await user.update({ verified: true });
     }
     const accessToken = await GenerateToken(user.id);
     await Token.deleteVerificationTokens(user.id);
     return CheckDBResponse.successResponse({
       ...user.dataValues,
+      wallet: undefined,
       password: undefined,
       createdAt: undefined,
       updatedAt: undefined,
@@ -166,7 +196,7 @@ exports.verify = async (id) => {
     });
   } catch (error) {
     console.log(error);
-    CheckDBResponse.errorResponse(error);
+    return CheckDBResponse.errorResponse(error);
   }
 };
 
@@ -266,7 +296,7 @@ exports.sendVerification = async (email) => {
     });
   } catch (error) {
     console.log(error);
-    CheckDBResponse.errorResponse(error);
+    return CheckDBResponse.errorResponse(error);
   }
 };
 
@@ -369,12 +399,6 @@ exports.signIn = async (data) => {
         return CheckDBResponse.errorResponse("Email verification sent");
       }
 
-      if (user.status !== "active") {
-        return CheckDBResponse.errorResponse(
-          "Your account is blocked. Please contact customer support."
-        );
-      }
-
       //update the lastlogin time
       // await User.lastLogin(user.uid);
       // const accessToken = await GenerateToken(user.uid, user.role);
@@ -385,6 +409,7 @@ exports.signIn = async (data) => {
         ...user.dataValues,
         accessToken: accessToken?.accessToken ?? undefined,
         password: undefined,
+        wallet: undefined,
         createdAt: undefined,
         updatedAt: undefined,
       });
@@ -393,7 +418,7 @@ exports.signIn = async (data) => {
     }
   } catch (error) {
     console.log(error);
-    CheckDBResponse.errorResponse(error);
+    return CheckDBResponse.errorResponse(error);
   }
 };
 

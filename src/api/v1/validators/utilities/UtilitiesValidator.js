@@ -165,11 +165,7 @@ exports.variations = [
 
     .custom(async (type, { req }) => {
       const { serviceID } = req.query;
-      if (type === "airtime") {
-        if (!Utilities.airtimeServiceIds[serviceID]) {
-          throw new Error("Invalid service ID");
-        }
-      } else if (type === "data") {
+      if (type === "data") {
         if (!Utilities.dataServiceIDs[serviceID]) {
           throw new Error("Invalid service ID");
         }
