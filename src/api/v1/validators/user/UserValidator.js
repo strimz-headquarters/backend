@@ -1,5 +1,5 @@
 const { param, body } = require("express-validator");
-const { User, Token, Blocked } = require("../../database/classes");
+const { User, Token } = require("../../database/classes");
 
 exports.getVerificationToken = [
   param("id")

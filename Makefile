@@ -9,6 +9,6 @@ mc:
 	cd src/api/v1/database && npx sequelize-cli migration:create --name ${name}
 
 dev:
-	cd src/api/v1/database && npx sequelize-cli db:migrate && mv /home/zarah/dev/shit/js/strimz-backend/src/api/v1/database/dev.sqlite /home/zarah/dev/shit/js/strimz-backend/ && npm run dev
+	cd src/api/v1/database && npx sequelize-cli db:migrate && mv /home/zarah/dev/shit/js/strimz/strimz-backend/src/api/v1/database/dev.sqlite /home/zarah/dev/shit/js/strimz/strimz-backend/ && npm run dev
 
 
