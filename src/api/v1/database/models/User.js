@@ -50,6 +50,12 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
 
+      level: {
+        type: DataTypes.INTEGER, // Change to the desired type
+        allowNull: false, // Adjust according to your needs
+        defaultValue: 0, // Optional: set a default value
+      },
+
       verified: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
