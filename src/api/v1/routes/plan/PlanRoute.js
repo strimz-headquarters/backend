@@ -6,8 +6,8 @@ const PlanValidator = require("../../validators/plan/PlanValidator");
 // add verification on token middleware
 router.post(
   "/",
-  VerifyToken,
-  verifyAdmin,
+  // VerifyToken,
+  // verifyAdmin,
   PlanValidator.createPlan,
   PlanController.createPlan
 );

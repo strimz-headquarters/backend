@@ -24,6 +24,22 @@ exports.createPlan = [
         throw new Error("Invalid Plan");
       }
     }),
+  body("duration").notEmpty().withMessage("duration required").bail(),
+  // .custom(async (duration) => {
+  //   if (isNaN(Number(duration))) {
+  //     throw new Error("Invalid duration");
+  //   }
+  // }),
+
+  body("amount")
+    .notEmpty()
+    .withMessage("amount required")
+    .bail()
+    .custom(async (amount) => {
+      if (isNaN(Number(amount))) {
+        throw new Error("Invalid amount");
+      }
+    }),
 ];
 
 exports.getPlan = [
