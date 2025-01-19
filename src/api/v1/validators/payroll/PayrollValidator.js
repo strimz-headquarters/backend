@@ -57,12 +57,14 @@ exports.createPayroll = [
     .notEmpty()
     .withMessage("start_date required")
     .bail()
-    .custom(async (start_date) => {
+    .custom(async (start_date, { req }) => {
       const date = new Date(start_date);
       const isValid = date instanceof Date && !isNaN(date);
       if (!isValid) {
         throw new Error("Invalid start_date");
       }
+
+      req.body.start_date = date.toISOString();
     }),
 ];
 
