@@ -39,6 +39,15 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BIGINT,
         allowNull: false,
       },
+      duration: {
+        type: DataTypes.ENUM,
+        values: ["yearly", "monthly"],
+        allowNull: false, // Adjust according to your needs
+      },
+      amount: {
+        type: DataTypes.INTEGER,
+        allowNull: false, // Adjust according to your needs
+      },
     },
     {
       sequelize,
