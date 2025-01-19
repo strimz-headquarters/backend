@@ -128,13 +128,15 @@ exports.signUp = async (data) => {
   </html>
   `;
     await mailService.sendMail(newUser.email, ``, emailHTML);
+    console.log(newUser);
+
     return CheckDBResponse.successResponse({
       ...newUser.dataValues,
+      address: newUser?.wallet?.address,
       wallet: undefined,
       password: undefined,
       createdAt: undefined,
       updatedAt: undefined,
-      // accessToken,
     });
   } catch (error) {
     console.log(error);
@@ -188,6 +190,7 @@ exports.verify = async (id) => {
     await Token.deleteVerificationTokens(user.id);
     return CheckDBResponse.successResponse({
       ...user.dataValues,
+      address: user.wallet.address,
       wallet: undefined,
       password: undefined,
       createdAt: undefined,
@@ -408,6 +411,7 @@ exports.signIn = async (data) => {
       return CheckDBResponse.successResponse({
         ...user.dataValues,
         accessToken: accessToken?.accessToken ?? undefined,
+        address: user?.wallet?.address,
         password: undefined,
         wallet: undefined,
         createdAt: undefined,
