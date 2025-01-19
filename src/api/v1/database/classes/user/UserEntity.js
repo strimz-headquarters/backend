@@ -1,5 +1,5 @@
 const { Sequelize, Op, col, fn } = require("sequelize");
-const { User, Blocked, Prediction } = require("../../models");
+const { User } = require("../../models");
 
 class UserEntity {
   //create a new user
@@ -55,15 +55,15 @@ class UserEntity {
     try {
       const result = await User.findOne({
         where: { id: uid },
-        include: [
-          {
-            model: Blocked,
-            as: "blocked",
-            attributes: ["reason", "createdAt"],
-          },
-        ],
       });
-      return result;
+      return {
+        ...result.dataValues,
+        wallet: undefined,
+        createdAt: undefined,
+        password: undefined,
+        updatedAt: undefined,
+        address: result?.wallet?.address,
+      };
     } catch (error) {
       console.log(error);
       return { success: false, error };
@@ -185,76 +185,6 @@ class UserEntity {
     } catch (error) {
       console.log(error);
       return { success: false, error };
-    }
-  }
-
-  static async getAllUsers(page = 0, size = 100, query) {
-    try {
-      let query_construct = {};
-      if (query?.status) {
-        query_construct.status = query.status;
-      }
-
-      const users = await User.findAndCountAll({
-        distinct: true,
-        where: query_construct,
-        attributes: {
-          include: [
-            // [
-            //   Sequelize.literal(`(
-            //   SELECT COUNT(*)
-            //   FROM "predictions" AS "Prediction"
-            //   WHERE "Prediction"."userId" = "User"."id"
-            // )`),
-            //   "totalPredictions", // Alias for the subquery count
-            // ],
-            [
-              Sequelize.literal(`CASE 
-            WHEN (SELECT COUNT(*) FROM predictions WHERE "predictions"."userId" = "User".id) = 0 THEN 0 
-            ELSE CAST("User"."totalPoints" AS FLOAT) / (SELECT COUNT(*) FROM predictions WHERE "predictions"."userId" = "User".id) 
-          END`), // Correct ratio calculation, with decimal casting
-              "averagePoints",
-            ],
-          ],
-        },
-        include: [
-          {
-            model: Blocked,
-            as: "blocked",
-            attributes: ["reason", "createdAt"],
-          },
-          {
-            model: Prediction, // Include the Prediction model
-            attributes: [], // Exclude Prediction details, only count
-          },
-        ],
-        limit: size,
-        offset: page * size,
-        // order: [["createdAt", "DESC"]],
-        // order: [
-        //   [
-        //     Sequelize.literal(`(
-        //   SELECT COUNT(*)
-        //   FROM "predictions" AS "Prediction"
-        //   WHERE "Prediction"."userId" = "User"."id"
-        // )`),
-        //     "DESC", // Sort by descending totalPredictions
-        //   ],
-        // ],
-
-        order: [
-          [
-            Sequelize.literal(`CASE 
-          WHEN (SELECT COUNT(*) FROM predictions WHERE "predictions"."userId" = "User".id) = 0 THEN 0 
-          ELSE CAST("User"."totalPoints" AS FLOAT) / (SELECT COUNT(*) FROM predictions WHERE "predictions"."userId" = "User".id) 
-        END`),
-            query?.order || "DESC",
-          ], // Sorting by ratio, handling division by zero, and maintaining decimal precision
-        ],
-      });
-      return users;
-    } catch (error) {
-      console.log(error);
     }
   }
 }
