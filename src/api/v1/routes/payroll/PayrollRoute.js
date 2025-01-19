@@ -12,9 +12,9 @@ router.post(
 );
 router.get("/", VerifyToken, pagination, PayrollController.getUserPayrolls);
 router.get(
-  "/:id",
+  "/",
   VerifyToken,
-  PayrollValidator.getPayroll,
+  PayrollValidator.getPayrollQuery,
   PayrollController.getPayroll
 );
 router.put(

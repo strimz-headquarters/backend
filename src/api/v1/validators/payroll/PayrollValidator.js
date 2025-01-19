@@ -1,4 +1,4 @@
-const { body, param } = require("express-validator");
+const { body, param, query } = require("express-validator");
 const { Payroll, Plan } = require("../../database/classes");
 
 exports.createPayroll = [
@@ -70,6 +70,26 @@ exports.createPayroll = [
 
 exports.getPayroll = [
   param("id")
+    .notEmpty()
+    .withMessage("id required")
+    .bail()
+    .custom(async (id, { req }) => {
+      const userId = req.user.uid;
+      const payroll = await Payroll.getPayroll({
+        id,
+      });
+      if (!payroll) {
+        throw new Error("Invalid payroll");
+      }
+
+      if (payroll.owner !== userId) {
+        throw new Error("UNAUTHORIZED");
+      }
+    }),
+];
+
+exports.getPayrollQuery = [
+  query("id")
     .notEmpty()
     .withMessage("id required")
     .bail()
