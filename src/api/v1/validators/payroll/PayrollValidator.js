@@ -40,7 +40,18 @@ exports.createPayroll = [
       }
     }),
 
-  body("token").notEmpty().withMessage("token required").bail(),
+  body("token")
+    .notEmpty()
+    .withMessage("token required")
+    .bail()
+    .custom((token) => {
+      if (!token.startsWith("0x0")) {
+        throw new Error("Token must have 0x0 prefix");
+      }
+      if (token.length !== 65) {
+        throw new Error("Token must have be 65 in length");
+      }
+    }),
 
   body("start_date")
     .notEmpty()
