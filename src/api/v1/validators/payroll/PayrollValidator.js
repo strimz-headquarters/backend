@@ -48,8 +48,8 @@ exports.createPayroll = [
       if (!token.startsWith("0x0")) {
         throw new Error("Token must have 0x0 prefix");
       }
-      if (token.length !== 65) {
-        throw new Error("Token must have be 65 in length");
+      if (token.length !== 66) {
+        throw new Error("Token must have be 66 in length");
       }
     }),
 
