@@ -51,6 +51,7 @@ exports.createPayroll = [
       if (token.length !== 66) {
         throw new Error("Token must have be 66 in length");
       }
+      return true;
     }),
 
   body("start_date")
