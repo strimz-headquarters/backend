@@ -1,6 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 const { HashPassword, Wallet } = require("../../helpers");
+const ethers = require("ethers");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -34,6 +35,11 @@ module.exports = (sequelize, DataTypes) => {
       username: {
         type: DataTypes.STRING,
         allowNull: true,
+      },
+
+      type: {
+        type: DataTypes.ENUM("eth", "strk"),
+        allowNull: false,
       },
 
       wallet: {
@@ -92,19 +98,26 @@ module.exports = (sequelize, DataTypes) => {
   User.beforeCreate(async (user) => {
     try {
       const hashedPassword = await HashPassword(user?.password);
-      const new_account = Wallet.computeAddress();
+      const new_account =
+        user.type.toLowerCase() === "eth"
+          ? new ethers.Wallet(ethers.Wallet.createRandom().privateKey)
+          : Wallet.computeAddress();
       const encryptionKey = await Wallet.deriveKeyFromPassword(hashedPassword);
-      const encryptedData = await Wallet.encryptPvKey(
-        new_account.privateKey,
-        encryptionKey.toString("hex")
-      );
+      const encryptedData =
+        user.type.toLowerCase() === "eth"
+          ? await new_account.encrypt(encryptionKey.toString("hex"))
+          : await Wallet.encryptPvKey(
+              new_account.privateKey,
+              encryptionKey.toString("hex")
+            );
       const wallet = {
         ...new_account,
-        privateKey: encryptedData,
+        encryptedData,
         encryptionKey: encryptionKey.toString("hex"),
       };
 
       user.wallet = wallet;
+      user.type = user.type.toLowerCase();
 
       user.password = hashedPassword;
     } catch (error) {

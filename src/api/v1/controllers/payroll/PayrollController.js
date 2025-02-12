@@ -55,6 +55,7 @@ exports.updatePayroll = async (req, res, next) => {
       plan: undefined,
       last_payroll: undefined,
       owner: undefined,
+      start_date: undefined,
     });
     const { success, ...result } = updatedPayroll;
     if (success) {

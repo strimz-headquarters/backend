@@ -49,7 +49,7 @@ module.exports = {
 
       frequency: {
         type: DataTypes.ENUM,
-        values: ["daily", "weekly", "monthly"],
+        values: ["daily", "weekly", "monthly", "yearly"],
         allowNull: false,
       },
       status: {

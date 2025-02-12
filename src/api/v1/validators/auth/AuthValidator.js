@@ -29,6 +29,19 @@ exports.addUser = [
         throw new Error("user already exists with this email address");
       }
     }),
+  body("type")
+    .notEmpty()
+    .withMessage("type is required")
+    .bail()
+
+    .custom(async (type) => {
+      if (
+        type.toString().toLowerCase() !== "eth" ||
+        type.toString().toLowerCase() !== "strk"
+      ) {
+        throw new Error("Invalid account type");
+      }
+    }),
 
   body("password")
     .notEmpty()

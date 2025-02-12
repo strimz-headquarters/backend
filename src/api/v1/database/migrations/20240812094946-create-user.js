@@ -14,6 +14,10 @@ module.exports = {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      type: {
+        type: DataTypes.ENUM("eth", "strk"),
+        allowNull: false,
+      },
 
       wallet: {
         type: DataTypes.TEXT,

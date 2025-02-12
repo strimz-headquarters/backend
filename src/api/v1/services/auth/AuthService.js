@@ -6,8 +6,7 @@ const jwt = require("jsonwebtoken");
 const mailService = require("../../helpers/email/EmailConfig");
 const crypto = require("crypto");
 const {
-  deploy_account,
-  transfer_deployment_fee,
+  transferDeploymentFee,
 } = require("../../controllers/contract/contract.controller");
 const { RpcProvider, Account, num, RPC } = require("starknet");
 const GenerateToken = async (uid) => {
@@ -150,7 +149,7 @@ exports.verify = async (id) => {
 
     const user = await User.getUser(token.userId);
 
-    if (!user.verified) {
+    if (!user.verified && user.type === "strk") {
       const account_payload = {
         classHash: user.wallet.classHash,
         constructorCalldata: user.wallet.constructorCallData,
@@ -173,7 +172,7 @@ exports.verify = async (id) => {
 
       const fee = await account.estimateAccountDeployFee(account_payload, {});
 
-      const suc = await transfer_deployment_fee(
+      const suc = await transferDeploymentFee(
         ACCOUNT_ADDRESS,
         (Number(fee.suggestedMaxFee) * 2).toString()
       );
