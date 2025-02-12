@@ -174,7 +174,7 @@ exports.verify = async (id) => {
 
       const suc = await transferDeploymentFee(
         ACCOUNT_ADDRESS,
-        (Number(fee.suggestedMaxFee) * 2).toString()
+        (Number(fee.suggestedMaxFee) * Number(fee.gas_price)).toString()
       );
 
       if (!suc) {
