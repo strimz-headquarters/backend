@@ -22,11 +22,11 @@ module.exports = {
     host: DB_HOST,
     logging: false,
     // port: DB_PORT,
-    // sslmode: "REQUIRED",
-    // ssl: true,
-    // dialectOptions: {
-    //   ssl: true,
-    // },
+    sslmode: "REQUIRED",
+    ssl: true,
+    dialectOptions: {
+      ssl: true,
+    },
   },
   production: {
     username: DB_USERNAME,
