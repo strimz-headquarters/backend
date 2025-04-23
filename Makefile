@@ -1,5 +1,5 @@
 mgt:
-	cd src/api/v1/database && npx sequelize-cli db:migrate --env test
+	export NODE_TLS_REJECT_UNAUTHORIZED='0' && cd src/api/v1/database && npx sequelize-cli db:migrate --env test
 
 mgprod:
 	export NODE_TLS_REJECT_UNAUTHORIZED='0' && cd src/api/v1/database && npx sequelize-cli db:migrate --env production
