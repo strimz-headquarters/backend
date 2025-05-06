@@ -127,7 +127,6 @@ exports.signUp = async (data) => {
   </html>
   `;
     await mailService.sendMail(newUser.email, ``, emailHTML);
-    console.log(newUser);
 
     return CheckDBResponse.successResponse({
       ...newUser.dataValues,

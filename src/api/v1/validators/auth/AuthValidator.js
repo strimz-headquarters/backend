@@ -36,7 +36,7 @@ exports.addUser = [
 
     .custom(async (type) => {
       if (
-        type.toString().toLowerCase() !== "eth" ||
+        type.toString().toLowerCase() !== "eth" &&
         type.toString().toLowerCase() !== "strk"
       ) {
         throw new Error("Invalid account type");

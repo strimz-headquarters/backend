@@ -4,28 +4,12 @@ const ABI = require("../../database/config/ABI.json");
 const ERC20_ABI = require("../../database/config/ERC20_ABI.json");
 const { Wallet } = require("../../helpers");
 
-const ENV = process.env.NODE_ENV;
-
-/**
- * Utility function to get environment-specific variables
- */
-const getEnvVar = (prod, test, dev) =>
-  ENV === "production" ? prod : ENV === "test" ? test : dev;
-
 /**
  * Contract Addresses
  */
 const CONTRACT_ADDRESSES = {
-  eth: getEnvVar(
-    process.env.PROD_ETH_CONTRACT_ADDRESS,
-    process.env.TEST_ETH_CONTRACT_ADDRESS,
-    process.env.DEV_ETH_CONTRACT_ADDRESS
-  ),
-  strk: getEnvVar(
-    process.env.PROD_STRK_CONTRACT_ADDRESS,
-    process.env.TEST_STRK_CONTRACT_ADDRESS,
-    process.env.DEV_STRK_CONTRACT_ADDRESS
-  ),
+  eth: process.env.ETH_CONTRACT_ADDRESS,
+  strk: process.env.STRK_CONTRACT_ADDRESS,
 };
 
 const RPC_URLS = {
@@ -48,7 +32,7 @@ const ERC20_CONTRACT_ADDRESS = process.env.ERC20_CONTRACT_ADDRESS;
 /**
  * Retrieves contract address based on type
  */
-const getContractAddress = (type) => CONTRACT_ADDRESSES[type];
+// const getContractAddress = (type) => CONTRACT_ADDRESSES[type];
 
 /**
  * Returns the provider and account for a given type (eth or strk)
