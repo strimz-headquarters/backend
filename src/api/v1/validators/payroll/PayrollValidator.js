@@ -16,18 +16,18 @@ exports.createPayroll = [
       }
     }),
 
-  body("plan")
-    .notEmpty()
-    .withMessage("plan required")
-    .bail()
-    .custom(async (_plan) => {
-      const plan = await Plan.getPlan({
-        planId: _plan,
-      });
-      if (!plan) {
-        throw new Error("Invalid Plan");
-      }
-    }),
+  // body("plan")
+  //   .notEmpty()
+  //   .withMessage("plan required")
+  //   .bail()
+  //   .custom(async (_plan) => {
+  //     const plan = await Plan.getPlan({
+  //       planId: _plan,
+  //     });
+  //     if (!plan) {
+  //       throw new Error("Invalid Plan");
+  //     }
+  //   }),
 
   body("frequency")
     .notEmpty()
