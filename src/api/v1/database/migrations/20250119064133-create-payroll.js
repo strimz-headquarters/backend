@@ -37,10 +37,10 @@ module.exports = {
         },
       },
 
-      plan: {
-        type: DataTypes.UUID,
-        allowNull: false,
-      },
+      // plan: {
+      //   type: DataTypes.UUID,
+      //   allowNull: false,
+      // },
 
       token: {
         type: DataTypes.STRING,
