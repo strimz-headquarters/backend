@@ -1,5 +1,8 @@
 const { Sequelize, Op, col, fn } = require("sequelize");
 const { User } = require("../../models");
+const {
+  getWallet,
+} = require("../../../controllers/contract/contract.controller");
 
 class UserEntity {
   //create a new user
@@ -64,6 +67,20 @@ class UserEntity {
         updatedAt: undefined,
         address: result?.wallet?.address,
       };
+    } catch (error) {
+      console.log(error);
+      return { success: false, error };
+    }
+  }
+
+  static async exportWallet(uid) {
+    try {
+      const result = await User.findOne({
+        where: { id: uid },
+      });
+
+      const wallet = await getWallet(result);
+      return wallet;
     } catch (error) {
       console.log(error);
       return { success: false, error };

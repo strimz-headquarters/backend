@@ -36,6 +36,17 @@ exports.getUser = async (id) => {
   }
 };
 
+exports.exportWallet = async (id) => {
+  try {
+    const user = await User.exportWallet(id);
+
+    // const {password,createdAt,updatedAt, ...others} = user.dataValues;
+    return CheckDBResponse.response(user);
+  } catch (error) {
+    return CheckDBResponse.errorResponse(error);
+  }
+};
+
 exports.searchUser = async (query, page, size) => {
   try {
     const user = await User.searchUser(query, page, size);

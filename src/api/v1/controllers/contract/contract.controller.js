@@ -52,6 +52,18 @@ const getProviderAndAccountEth = async (user = null) => {
   return { provider, account };
 };
 
+const getWalletETH = async (user) => {
+  const account = ethers.Wallet.fromEncryptedJsonSync(
+    user.wallet.encryptedData,
+    user.wallet.encryptionKey
+  );
+  return {
+    address: account.address,
+    privateKey: account.privateKey,
+    type: user.type,
+  };
+};
+
 const getProviderAndAccountStrk = async (user = null) => {
   const rpcUrl = RPC_URLS.strk;
   const provider = new RpcProvider({ nodeUrl: rpcUrl });
@@ -68,6 +80,23 @@ const getProviderAndAccountStrk = async (user = null) => {
   const privateKey = PRIVATE_KEYS.strk;
   const account = new Account(provider, ACCOUNT_ADDRESSES.strk, privateKey);
   return { provider, account };
+};
+
+const getWalletSTRK = async (user) => {
+  const privateKey = await Wallet.decryptPvKey(
+    user.wallet.encryptedData.encryptedData,
+    user.wallet.encryptionKey.toString("hex"),
+    user.wallet.encryptedData.salt,
+    user.wallet.encryptedData.iv
+  );
+  return { address: user.wallet.address, privateKey, type: user.type };
+};
+
+const getWallet = async (user) => {
+  if (user.type === "eth") {
+    return await getWalletETH(user);
+  }
+  return await getWalletSTRK(user);
 };
 
 /**
@@ -253,4 +282,5 @@ module.exports = {
   // getContractInstanceStrk,
   estimateGas,
   invokeFunction,
+  getWallet,
 };

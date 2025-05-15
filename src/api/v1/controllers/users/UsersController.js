@@ -218,6 +218,24 @@ exports.getSingleUser = async (req, res, next) => {
   }
 };
 
+exports.exportWallet = async (req, res, next) => {
+  const userId = req.user.uid;
+  //check for errors
+  const errors = CheckBadRequest(req, res, next);
+  if (errors) return next(errors);
+  try {
+    const wallet = await UsersService.exportWallet(userId);
+    return MessageResponse.successResponse(
+      res,
+      "Wallet found",
+      200,
+      wallet.data
+    );
+  } catch (error) {
+    return MessageResponse.errorResponse(res, "server error", 500, error);
+  }
+};
+
 //get user  based on their access token
 exports.getUser = async (req, res, next) => {
   //check for errors

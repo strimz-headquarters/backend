@@ -13,6 +13,12 @@ router.get(
   UserController.getAllUsers
 );
 router.get("/name/:query", pagination, VerifyToken, UserController.searchUser);
+router.get(
+  "/export-wallet",
+  VerifyToken,
+  // UserValidator.getUser,
+  UserController.exportWallet
+);
 router.get("/:id", VerifyToken, UserValidator.getUser, UserController.getUser);
 router.put("/", VerifyToken, UserController.updateUser);
 router.put(
