@@ -40,19 +40,16 @@ exports.createPayroll = [
       }
     }),
 
-  body("token")
-    .notEmpty()
-    .withMessage("token required")
-    .bail()
-    .custom((token) => {
-      if (!token.startsWith("0x0")) {
-        throw new Error("Token must have 0x0 prefix");
-      }
-      if (token.length !== 66) {
-        throw new Error("Token must have be 66 in length");
-      }
-      return true;
-    }),
+  body("token").notEmpty().withMessage("token required").bail(),
+  // .custom((token) => {
+  //   if (!token.startsWith("0x0")) {
+  //     throw new Error("Token must have 0x0 prefix");
+  //   }
+  //   if (token.length !== 66) {
+  //     throw new Error("Token must have be 66 in length");
+  //   }
+  //   return true;
+  // }),
 
   body("start_date")
     .notEmpty()
