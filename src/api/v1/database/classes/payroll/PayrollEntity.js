@@ -38,14 +38,14 @@ class PayrollEntity {
     try {
       const result = await Payroll.findOne({
         where: query,
-        include: [
-          {
-            model: Plan,
-            as: "current_plan",
+        // include: [
+        //   {
+        //     model: Plan,
+        //     as: "current_plan",
 
-            // as: "plan",
-          },
-        ],
+        //     // as: "plan",
+        //   },
+        // ],
       });
       return result;
     } catch (error) {
@@ -66,12 +66,12 @@ class PayrollEntity {
       const payrolls = await Payroll.findAndCountAll({
         distinct: true,
         where: query_construct,
-        include: [
-          {
-            model: Plan,
-            as: "current_plan",
-          },
-        ],
+        // include: [
+        //   {
+        //     model: Plan,
+        //     as: "current_plan",
+        //   },
+        // ],
         limit: size,
         offset: page * size,
         order: [["createdAt", "DESC"]],

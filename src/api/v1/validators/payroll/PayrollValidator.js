@@ -1,5 +1,5 @@
 const { body, param, query } = require("express-validator");
-const { Payroll, Plan } = require("../../database/classes");
+const { Payroll } = require("../../database/classes");
 
 exports.createPayroll = [
   body("name")

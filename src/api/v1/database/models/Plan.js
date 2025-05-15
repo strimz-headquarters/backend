@@ -9,10 +9,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(model) {
       // define association here
-      this.hasOne(model.Payroll, {
-        foreignKey: "plan",
-        as: "current_plan",
-      });
+      // this.hasOne(model.Payroll, {
+      //   foreignKey: "plan",
+      //   as: "current_plan",
+      // });
     }
     toJSON() {
       return {
