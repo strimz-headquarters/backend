@@ -311,6 +311,7 @@
     "outputs": [],
     "stateMutability": "nonpayable"
   },
+
   {
     "type": "function",
     "name": "getFrequency",
@@ -844,6 +845,29 @@
   },
   {
     "type": "function",
+    "name": "getUserHistory",
+    "inputs": [
+      { "name": "user", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple[]",
+        "internalType": "struct History[]",
+        "components": [
+          { "name": "success", "type": "bool", "internalType": "bool" },
+          { "name": "owner", "type": "address", "internalType": "address" },
+          { "name": "timestamp", "type": "uint256", "internalType": "uint256" },
+          { "name": "amount", "type": "uint256", "internalType": "uint256" },
+          { "name": "title", "type": "bytes32", "internalType": "bytes32" },
+          { "name": "token", "type": "address", "internalType": "address" }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "new_payroll",
     "inputs": [
       { "name": "_title", "type": "bytes32", "internalType": "bytes32" },
@@ -931,22 +955,40 @@
     "name": "Disburse",
     "inputs": [
       {
-        "name": "title",
-        "type": "bytes32",
+        "name": "success",
+        "type": "bool",
         "indexed": true,
-        "internalType": "bytes32"
+        "internalType": "bool"
       },
       {
-        "name": "amount",
-        "type": "uint256",
+        "name": "owner",
+        "type": "address",
         "indexed": true,
-        "internalType": "uint256"
+        "internalType": "address"
       },
       {
         "name": "timestamp",
         "type": "uint256",
         "indexed": true,
         "internalType": "uint256"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "title",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "token",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
       }
     ],
     "anonymous": false
