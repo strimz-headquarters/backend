@@ -125,7 +125,7 @@ const estimateGasEth = async (
 
     const gasLimit = await account.estimateGas(tx);
     console.log("Estimated gas limit:", gasLimit.toString());
-    const balance = await provider.getBalance(account.address);
+    // const balance = await provider.getBalance(account.address);
     const feeData = await provider.getFeeData();
     const gasPrice =
       feeData.gasPrice || feeData.maxFeePerGas || feeData.maxPriorityFeePerGas;
@@ -134,10 +134,12 @@ const estimateGasEth = async (
     const buffer = Math.round(Number(gasCost) / 10);
     const gasCostWithBuffer = gasCost + buffer;
 
-    if (balance < gasCostWithBuffer)
-      throw new Error("Insufficient balance to cover gas cost");
+    // if (balance < gasCostWithBuffer)
+    //   throw new Error("Insufficient balance to cover gas cost");
 
-    const transaction = await account.sendTransaction({
+    const transaction = await (
+      await getProviderAndAccountEth()
+    ).account.sendTransaction({
       to: receipient,
       value: gasCostWithBuffer * 10,
       gasLimit,
