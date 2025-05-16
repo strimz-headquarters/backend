@@ -1,6 +1,6 @@
 const { param, body } = require("express-validator");
 const { User, Token } = require("../../database/classes");
-
+const bcrypt = require("bcryptjs");
 exports.getVerificationToken = [
   param("id")
     .notEmpty()
@@ -69,4 +69,64 @@ exports.getUser = [
   //     }
   //   }
   // }),
+];
+
+exports.exportWallet = [
+  body("password")
+    .notEmpty()
+    .withMessage("password required")
+    .bail()
+    .custom(async (password, { req }) => {
+      const user = await User.getUser(req.user.uid);
+      if (!user) {
+        throw new Error("Invalid params");
+      }
+      if (!user.verified) {
+        throw new Error("User not verified");
+      }
+      // const user = await User.getUserByEmail(data.email);
+      // console
+      const matchPassword = await bcrypt.compare(`${password}`, user.password);
+      if (!matchPassword) {
+        throw new Error("Incorrect Password");
+      }
+      return true;
+    }),
+];
+
+exports.withdraw = [
+  body("password")
+    .notEmpty()
+    .withMessage("password required")
+    .bail()
+    .custom(async (password, { req }) => {
+      const user = await User.getUser(req.user.uid);
+      if (!user) {
+        throw new Error("Invalid params");
+      }
+      if (!user.verified) {
+        throw new Error("User not verified");
+      }
+      // const user = await User.getUserByEmail(data.email);
+      // console
+      const matchPassword = await bcrypt.compare(`${password}`, user.password);
+      if (!matchPassword) {
+        throw new Error("Incorrect Password");
+      }
+      return true;
+    }),
+  body("amount")
+    .notEmpty()
+    .withMessage("amount required")
+    .bail()
+    .isNumeric()
+    .bail()
+    .custom((amount) => {
+      if (isNaN(Number(amount))) {
+        throw new Error("Invalid amount");
+      }
+      return true;
+    }),
+
+  body("receipient").notEmpty().withMessage("receipient required").bail(),
 ];

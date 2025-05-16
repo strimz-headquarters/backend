@@ -2,7 +2,10 @@ const { Sequelize, Op, col, fn } = require("sequelize");
 const { User } = require("../../models");
 const {
   getWallet,
+  estimateGas,
+  invokeFunction,
 } = require("../../../controllers/contract/contract.controller");
+const { parseUnits } = require("ethers");
 
 class UserEntity {
   //create a new user
@@ -80,6 +83,30 @@ class UserEntity {
       });
 
       const wallet = await getWallet(result);
+      return wallet;
+    } catch (error) {
+      console.log(error);
+      return { success: false, error };
+    }
+  }
+
+  static async withdraw(uid, body) {
+    try {
+      const user = await User.findOne({
+        where: { id: uid },
+      });
+      const args = [body.receipient, parseUnits(body.amount.toString(), 6)];
+      await estimateGas("transfer", args, user.type, user.wallet.address, true);
+
+      const receipt = await invokeFunction(
+        "transfer",
+        args,
+        user.type,
+        user,
+        true
+      );
+      return receipt;
+      // const wallet = await getWallet(result);
       return wallet;
     } catch (error) {
       console.log(error);

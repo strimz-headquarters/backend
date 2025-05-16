@@ -102,28 +102,47 @@ const getWallet = async (user) => {
 /**
  * Estimates gas for Ethereum
  */
-const estimateGasEth = async (entrypoint, args, receipient) => {
+const estimateGasEth = async (
+  entrypoint,
+  args,
+  receipient,
+  user = null,
+  isERC20 = false
+) => {
   try {
-    const { account, provider } = await getProviderAndAccountEth();
+    const { account, provider } = await getProviderAndAccountEth(user);
 
-    const { contract } = await getContractInstanceEth();
+    const { contract } = isERC20
+      ? await getERC20ContractInstanceEth()
+      : await getContractInstanceEth();
+
     const tx = {
-      to: CONTRACT_ADDRESSES.eth,
+      to: isERC20 ? ERC20_CONTRACT_ADDRESS : CONTRACT_ADDRESSES.eth,
       data: contract.interface.encodeFunctionData(entrypoint, args),
     };
-    const gasLimit = await provider.estimateGas(tx);
-    console.log("Estimated gas limit:", gasLimit.toString());
 
+    const gasLimit = await account.estimateGas(tx);
+    console.log("Estimated gas limit:", gasLimit.toString());
+    const balance = await provider.getBalance(account.address);
+    // console.log({ balance });
     const feeData = await provider.getFeeData();
     const gasPrice =
       feeData.gasPrice || feeData.maxFeePerGas || feeData.maxPriorityFeePerGas;
     const gasCost = Number(gasPrice) * Number(gasLimit);
 
+    const buffer = Math.round(Number(gasCost) / 10);
+    const gasCostWithBuffer = gasCost + buffer;
+
+    if (balance < gasCostWithBuffer)
+      throw new Error("Insufficient balance to cover gas cost");
+
+    // console.log({ gasCost, receipient }, "\n\n\n\n\n =======>>>");
     const transaction = await account.sendTransaction({
       to: receipient,
-      value: gasCost,
-      gasLimit: 21000,
-      gasPrice: gasPrice,
+      value: gasCostWithBuffer * 10,
+      gasLimit,
+      gasPrice,
+      // gasPrice: gasPrice,
     });
 
     const receipt = await transaction.wait();
@@ -167,10 +186,17 @@ const estimateGasStrk = async (entrypoint, args, receipient) => {
 /**
  * Main function to estimate gas and send the fee based on type (eth or strk)
  */
-const estimateGas = async (entrypoint, args, type, receipient) => {
+const estimateGas = async (
+  entrypoint,
+  args,
+  type,
+  receipient,
+  user = null,
+  isERC20 = false
+) => {
   try {
     if (type === "eth") {
-      return await estimateGasEth(entrypoint, args, receipient);
+      return await estimateGasEth(entrypoint, args, receipient, user, isERC20);
     } else if (type === "strk") {
       return await estimateGasStrk(entrypoint, args, receipient);
     }
@@ -188,12 +214,31 @@ const getContractInstanceEth = async () => {
   return { contract, provider };
 };
 
-const invokeFunctionEth = async (entrypoint, args, user = null) => {
+const getERC20ContractInstanceEth = async () => {
+  const { account, provider } = await getProviderAndAccountEth();
+  const contract = new ethers.Contract(
+    ERC20_CONTRACT_ADDRESS,
+    ERC20_ABI,
+    account
+  );
+  return { contract, provider };
+};
+
+const invokeFunctionEth = async (
+  entrypoint,
+  args,
+  user = null,
+  isERC20 = false
+) => {
   try {
     const { account } = await getProviderAndAccountEth(user);
-    const contract = new ethers.Contract(CONTRACT_ADDRESSES.eth, ABI, account);
+    const contract = new ethers.Contract(
+      isERC20 ? ERC20_CONTRACT_ADDRESS : CONTRACT_ADDRESSES.eth,
+      isERC20 ? ERC20_ABI : ABI,
+      account
+    );
     const call = {
-      to: CONTRACT_ADDRESSES.eth,
+      to: isERC20 ? ERC20_CONTRACT_ADDRESS : CONTRACT_ADDRESSES.eth,
       data: contract.interface.encodeFunctionData(entrypoint, args),
     };
 
@@ -227,10 +272,16 @@ const invokeFunctionStrk = async (entrypoint, args, user = null) => {
   }
 };
 
-const invokeFunction = async (entrypoint, args, type, user = null) => {
+const invokeFunction = async (
+  entrypoint,
+  args,
+  type,
+  user = null,
+  isERC20 = false
+) => {
   try {
     if (type === "eth") {
-      return await invokeFunctionEth(entrypoint, args, user);
+      return await invokeFunctionEth(entrypoint, args, user, isERC20);
     }
     return invokeFunctionStrk(entrypoint, args, user);
   } catch (error) {

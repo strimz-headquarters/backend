@@ -16,6 +16,46 @@ exports.createPayroll = [
       }
     }),
 
+  // body("receipient")
+  //   .optional()
+  //   .custom((value) => {
+  //     // Ensure it's an array
+  //     if (!Array.isArray(value)) {
+  //       throw new Error("receipients must be an array");
+  //     }
+
+  //     value.forEach((item, index) => {
+  //       if (typeof item !== "object" || item === null || Array.isArray(item)) {
+  //         throw new Error(`receipient at index ${index} must be an object`);
+  //       }
+
+  //       // Example: Required fields in each object
+  //       if (!item.address) {
+  //         throw new Error(
+  //           `receipient at index ${index} is missing required field: address`
+  //         );
+  //       }
+  //       if (!item.amount) {
+  //         throw new Error(
+  //           `receipient at index ${index} is missing required field: amount`
+  //         );
+  //       }
+  //       if (!item.name) {
+  //         throw new Error(
+  //           `receipient at index ${index} is missing required field: name`
+  //         );
+  //       }
+
+  //       // if (!item.name || typeof item.name !== "string") {
+  //       //   throw new Error(`Item at index ${index} must have a 'name' string`);
+  //       // }
+
+  //       // Add more field-specific validations here
+  //     });
+
+  //     return true;
+  //   }),
+
   // body("plan")
   //   .notEmpty()
   //   .withMessage("plan required")
@@ -34,7 +74,7 @@ exports.createPayroll = [
     .withMessage("frequency required")
     .bail()
     .custom(async (frequency) => {
-      const frequencies = ["daily", "weekly", "monthly"];
+      const frequencies = ["daily", "weekly", "monthly", "yearly"];
       if (!frequencies.includes(frequency)) {
         throw new Error("Invalid frequency");
       }

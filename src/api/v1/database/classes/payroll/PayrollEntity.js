@@ -1,9 +1,67 @@
-const { Payroll, Plan } = require("../../models");
+const { parseUnits, ethers } = require("ethers");
+const { Payroll, User, Plan } = require("../../models");
+const {
+  estimateGas,
+  invokeFunction,
+} = require("../../../controllers/contract/contract.controller");
 
 class PayrollEntity {
+  static getFrequencyIndex(frequency) {
+    let index = 0;
+    switch (frequency.toLowerCase()) {
+      case "daily":
+        index = 0;
+        break;
+
+      case "weekly":
+        index = 1;
+        break;
+      case "monthly":
+        index = 2;
+        break;
+      case "yearly":
+        index = 3;
+        break;
+
+      default:
+        break;
+    }
+
+    return index;
+  }
+
   static async createPayroll(data) {
     try {
-      const newPayroll = await Payroll.create(data);
+      const user = await User.findOne({
+        where: {
+          id: data.owner,
+        },
+      });
+
+      if (!user) return { success: false };
+
+      const args = [
+        ethers.encodeBytes32String(data.name.toLowerCase().trim()),
+        data.receipients.map((mp) => ({
+          username: mp.name,
+          amount: parseUnits(mp.amount.toString(), 6),
+          _address: mp.address,
+          valid: true,
+        })),
+        data.token,
+        new Date(data.start_date).getTime(),
+        this.getFrequencyIndex(data.frequency),
+      ];
+
+      // console.log({ args });
+      await estimateGas("new_payroll", args, user.type, user.wallet.address);
+      // console.log("fund receipt =====>>>>>> \n\n\n\n\n", fund_recipt);
+      await invokeFunction("new_payroll", args, user.type, user);
+
+      const newPayroll = await Payroll.create({
+        ...data,
+        name: data.name.toLowerCase().trim(),
+      });
 
       return newPayroll;
     } catch (error) {

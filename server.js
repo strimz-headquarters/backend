@@ -19,10 +19,18 @@ const {
   estimateGas,
   invokeFunction,
 } = require("./src/api/v1/controllers/contract/contract.controller");
+const { ethers } = require("ethers");
 
 async function processPayment(payroll) {
   try {
-    const user = await User.finOne({
+    console.log(
+      {
+        payroll: payroll.name,
+        hex: ethers.encodeBytes32String(payroll.name.trim().toLowerCase()),
+      },
+      "\n\n\n\n\n\n\n\n\n\n\n"
+    );
+    const user = await User.findOne({
       where: {
         id: payroll.owner,
       },
@@ -31,14 +39,15 @@ async function processPayment(payroll) {
 
     const fund_receipt = await estimateGas(
       "disburse",
-      [payroll.name],
+      [ethers.encodeBytes32String(payroll.name.trim().toLowerCase())],
       user.type,
-      user.wallet.address
+      user.wallet.address,
+      user
     );
     console.log(`Account funded ${fund_receipt}`);
     const invoke_receipt = await invokeFunction(
       "disburse",
-      [payroll.name],
+      [ethers.encodeBytes32String(payroll.name.trim().toLowerCase())],
       user.type,
       user
     );
@@ -112,7 +121,10 @@ const processPayrolls = async () => {
 
           console.log(`Payroll processed successfully: ${payroll.name}`);
         } catch (error) {
-          console.error(`Error processing payroll: ${payroll.name}`, error);
+          console.error(
+            `Error processing payroll: ${payroll.name}`,
+            JSON.stringify(error, null, 2)
+          );
         }
       })
     );
@@ -143,5 +155,7 @@ server.listen(PORT, async () => {
   console.log("server running");
   // await sequelize.sync();
   await sequelize.authenticate({ force: true });
+  // await processPayrolls();
+
   console.log("database connected");
 });

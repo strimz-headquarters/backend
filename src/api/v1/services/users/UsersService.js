@@ -38,10 +38,19 @@ exports.getUser = async (id) => {
 
 exports.exportWallet = async (id) => {
   try {
-    const user = await User.exportWallet(id);
+    const wallet = await User.exportWallet(id);
 
-    // const {password,createdAt,updatedAt, ...others} = user.dataValues;
-    return CheckDBResponse.response(user);
+    return CheckDBResponse.response(wallet);
+  } catch (error) {
+    return CheckDBResponse.errorResponse(error);
+  }
+};
+
+exports.withdraw = async (id, body) => {
+  try {
+    const result = await User.withdraw(id, body);
+
+    return CheckDBResponse.response(result);
   } catch (error) {
     return CheckDBResponse.errorResponse(error);
   }
