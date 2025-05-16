@@ -101,7 +101,7 @@ class UserEntity {
         args,
         user.type,
         user.wallet.address,
-        null,
+        user,
         true,
         body.token
       );

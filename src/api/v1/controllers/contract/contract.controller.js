@@ -240,6 +240,7 @@ const invokeFunctionEth = async (
 ) => {
   try {
     const { account } = await getProviderAndAccountEth(user);
+    // console.log(user);
     const contract = new ethers.Contract(
       isERC20
         ? contractAddress ?? ERC20_CONTRACT_ADDRESS
