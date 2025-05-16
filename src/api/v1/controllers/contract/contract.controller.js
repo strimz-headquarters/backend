@@ -112,9 +112,8 @@ const estimateGasEth = async (
 ) => {
   try {
     const { account, provider } = await getProviderAndAccountEth(user);
-
     const { contract } = isERC20
-      ? await getERC20ContractInstanceEth()
+      ? await getERC20ContractInstanceEth(contractAddress)
       : await getContractInstanceEth();
 
     const tx = {
@@ -127,7 +126,6 @@ const estimateGasEth = async (
     const gasLimit = await account.estimateGas(tx);
     console.log("Estimated gas limit:", gasLimit.toString());
     const balance = await provider.getBalance(account.address);
-    // console.log({ balance });
     const feeData = await provider.getFeeData();
     const gasPrice =
       feeData.gasPrice || feeData.maxFeePerGas || feeData.maxPriorityFeePerGas;
@@ -139,13 +137,11 @@ const estimateGasEth = async (
     if (balance < gasCostWithBuffer)
       throw new Error("Insufficient balance to cover gas cost");
 
-    // console.log({ gasCost, receipient }, "\n\n\n\n\n =======>>>");
     const transaction = await account.sendTransaction({
       to: receipient,
       value: gasCostWithBuffer * 10,
       gasLimit,
       gasPrice,
-      // gasPrice: gasPrice,
     });
 
     const receipt = await transaction.wait();
@@ -225,10 +221,10 @@ const getContractInstanceEth = async () => {
   return { contract, provider };
 };
 
-const getERC20ContractInstanceEth = async () => {
+const getERC20ContractInstanceEth = async (contractAddress = null) => {
   const { account, provider } = await getProviderAndAccountEth();
   const contract = new ethers.Contract(
-    ERC20_CONTRACT_ADDRESS,
+    contractAddress ?? ERC20_CONTRACT_ADDRESS,
     ERC20_ABI,
     account
   );
