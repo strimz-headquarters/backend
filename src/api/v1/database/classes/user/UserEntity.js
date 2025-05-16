@@ -96,7 +96,14 @@ class UserEntity {
         where: { id: uid },
       });
       const args = [body.receipient, parseUnits(body.amount.toString(), 6)];
-      await estimateGas("transfer", args, user.type, user.wallet.address, true);
+      await estimateGas(
+        "transfer",
+        args,
+        user.type,
+        user.wallet.address,
+        null,
+        true
+      );
 
       const receipt = await invokeFunction(
         "transfer",
