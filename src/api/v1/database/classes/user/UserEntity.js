@@ -103,7 +103,8 @@ class UserEntity {
         args,
         user.type,
         user,
-        true
+        true,
+        body.token
       );
       return receipt;
       // const wallet = await getWallet(result);

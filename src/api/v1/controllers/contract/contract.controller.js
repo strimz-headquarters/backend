@@ -228,12 +228,15 @@ const invokeFunctionEth = async (
   entrypoint,
   args,
   user = null,
-  isERC20 = false
+  isERC20 = false,
+  contractAddress = null
 ) => {
   try {
     const { account } = await getProviderAndAccountEth(user);
     const contract = new ethers.Contract(
-      isERC20 ? ERC20_CONTRACT_ADDRESS : CONTRACT_ADDRESSES.eth,
+      isERC20
+        ? contractAddress ?? ERC20_CONTRACT_ADDRESS
+        : CONTRACT_ADDRESSES.eth,
       isERC20 ? ERC20_ABI : ABI,
       account
     );
@@ -277,11 +280,18 @@ const invokeFunction = async (
   args,
   type,
   user = null,
-  isERC20 = false
+  isERC20 = false,
+  contractAddress = null
 ) => {
   try {
     if (type === "eth") {
-      return await invokeFunctionEth(entrypoint, args, user, isERC20);
+      return await invokeFunctionEth(
+        entrypoint,
+        args,
+        user,
+        isERC20,
+        contractAddress
+      );
     }
     return invokeFunctionStrk(entrypoint, args, user);
   } catch (error) {

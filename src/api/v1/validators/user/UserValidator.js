@@ -129,4 +129,5 @@ exports.withdraw = [
     }),
 
   body("receipient").notEmpty().withMessage("receipient required").bail(),
+  body("token").notEmpty().withMessage("token required").bail(),
 ];
