@@ -107,7 +107,8 @@ const estimateGasEth = async (
   args,
   receipient,
   user = null,
-  isERC20 = false
+  isERC20 = false,
+  contractAddress = null
 ) => {
   try {
     const { account, provider } = await getProviderAndAccountEth(user);
@@ -117,7 +118,9 @@ const estimateGasEth = async (
       : await getContractInstanceEth();
 
     const tx = {
-      to: isERC20 ? ERC20_CONTRACT_ADDRESS : CONTRACT_ADDRESSES.eth,
+      to: isERC20
+        ? contractAddress ?? ERC20_CONTRACT_ADDRESS
+        : CONTRACT_ADDRESSES.eth,
       data: contract.interface.encodeFunctionData(entrypoint, args),
     };
 
@@ -192,11 +195,19 @@ const estimateGas = async (
   type,
   receipient,
   user = null,
-  isERC20 = false
+  isERC20 = false,
+  contractAddress = null
 ) => {
   try {
     if (type === "eth") {
-      return await estimateGasEth(entrypoint, args, receipient, user, isERC20);
+      return await estimateGasEth(
+        entrypoint,
+        args,
+        receipient,
+        user,
+        isERC20,
+        contractAddress
+      );
     } else if (type === "strk") {
       return await estimateGasStrk(entrypoint, args, receipient);
     }

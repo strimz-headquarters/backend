@@ -102,7 +102,8 @@ class UserEntity {
         user.type,
         user.wallet.address,
         null,
-        true
+        true,
+        body.token
       );
 
       const receipt = await invokeFunction(
