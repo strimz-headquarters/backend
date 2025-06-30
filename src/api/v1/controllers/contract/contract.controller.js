@@ -210,6 +210,7 @@ const estimateGas = async (
       return await estimateGasStrk(entrypoint, args, receipient);
     }
   } catch (error) {
+    console.log("error here");
     throw error;
   }
 };
@@ -305,6 +306,7 @@ const invokeFunction = async (
     }
     return invokeFunctionStrk(entrypoint, args, user);
   } catch (error) {
+    console.log("maybe here");
     throw error;
   }
 };
