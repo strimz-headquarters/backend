@@ -21,7 +21,7 @@ module.exports = {
     dialect: DB_DIALECT,
     host: DB_HOST,
     logging: false,
-    // port: DB_PORT,
+    port: DB_PORT,
     sslmode: "REQUIRED",
     ssl: true,
     dialectOptions: {
