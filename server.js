@@ -148,8 +148,74 @@ app.get("/", async (req, res) => {
 
 app.use(ErrorHandler);
 
+app.use((err, req, res, next) => {
+  console.error("Error:", err);
+
+  // Handle Sequelize validation errors
+  if (err.name === "SequelizeValidationError") {
+    return res.status(400).json({
+      success: false,
+      error: "Validation error",
+      details: err.errors.map((e) => ({
+        field: e.path,
+        message: e.message,
+      })),
+    });
+  }
+
+  // Handle Sequelize unique constraint errors
+  if (err.name === "SequelizeUniqueConstraintError") {
+    return res.status(409).json({
+      success: false,
+      error: "Duplicate entry",
+      details: err.errors.map((e) => ({
+        field: e.path,
+        message: e.message,
+      })),
+    });
+  }
+
+  // Handle Sequelize foreign key errors
+  if (err.name === "SequelizeForeignKeyConstraintError") {
+    return res.status(400).json({
+      success: false,
+      error: "Invalid reference",
+      message: "Referenced resource does not exist",
+    });
+  }
+
+  // Default error response
+  res.status(err.status || 500).json({
+    success: false,
+    error: err.message || "Internal server error",
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+  });
+});
+
 const server = app;
 const PORT = process.env.PORT || 9000;
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: "Endpoint not found",
+    message: `Cannot ${req.method} ${req.path}`,
+  });
+});
+
+// Handle graceful shutdown
+process.on("SIGTERM", async () => {
+  console.log("SIGTERM received, shutting down gracefully...");
+  await sequelize.close();
+  process.exit(0);
+});
+
+process.on("SIGINT", async () => {
+  console.log("SIGINT received, shutting down gracefully...");
+  await sequelize.close();
+  process.exit(0);
+});
 
 server.listen(PORT, async () => {
   console.log("server running");
