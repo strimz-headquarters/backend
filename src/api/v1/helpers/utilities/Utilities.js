@@ -1,5 +1,14 @@
 const crypto = require("crypto");
 
+exports.getTokenAddress = (currency) => {
+  // Mainnet addresses - change for testnet
+  const addresses = {
+    USDT: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    USDC: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  };
+  return addresses[currency];
+};
+
 exports.generateRequestId = () => {
   // Define the timezone offset for Africa/Lagos (GMT+1)
   const lagosTime = new Date(

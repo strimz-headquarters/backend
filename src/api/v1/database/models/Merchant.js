@@ -1,24 +1,12 @@
 const { Model } = require("sequelize");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
-
+const { HashPassword, Wallet } = require("../../helpers");
+const ethers = require("ethers");
 module.exports = (sequelize, DataTypes) => {
   class Merchant extends Model {
     static associate(models) {
-      this.hasMany(models.PaymentSession, {
-        foreignKey: "merchant_id",
-        as: "sessions",
-      });
-
-      this.hasMany(models.Transaction, {
-        foreignKey: "merchant_id",
-        as: "transactions",
-      });
-
-      this.hasMany(models.WebhookLog, {
-        foreignKey: "merchant_id",
-        as: "webhookLogs",
-      });
+      this.hasMany(models.Subscription, { foreignKey: "merchantId" });
     }
 
     // Instance method to verify API secret
@@ -43,8 +31,7 @@ module.exports = (sequelize, DataTypes) => {
     // Hide sensitive data when converting to JSON
     toJSON() {
       const values = Object.assign({}, this.get());
-      delete values.api_secret_hash;
-      delete values.password_hash;
+
       return values;
     }
   }
@@ -56,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      business_name: {
+      name: {
         type: DataTypes.STRING(255),
         allowNull: false,
         validate: {
@@ -84,11 +71,11 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
-      password_hash: {
-        type: DataTypes.STRING(255),
+      password: {
+        type: DataTypes.STRING,
         allowNull: true,
       },
-      wallet_address: {
+      wallet: {
         type: DataTypes.STRING(42),
         allowNull: false,
         unique: {
@@ -102,7 +89,7 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
-      api_key: {
+      apiKey: {
         type: DataTypes.STRING(128),
         allowNull: false,
         unique: true,
@@ -110,121 +97,126 @@ module.exports = (sequelize, DataTypes) => {
           notEmpty: true,
         },
       },
-      api_secret_hash: {
-        type: DataTypes.STRING(255),
-        allowNull: false,
-      },
-      status: {
-        type: DataTypes.ENUM("active", "suspended", "pending_verification"),
-        defaultValue: "pending_verification",
-        allowNull: false,
-      },
-      kyc_verified: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-      total_volume: {
-        type: DataTypes.DECIMAL(20, 8),
-        defaultValue: 0,
-        validate: {
-          min: 0,
-        },
-      },
-      available_balance: {
-        type: DataTypes.DECIMAL(20, 8),
-        defaultValue: 0,
-        validate: {
-          min: 0,
-        },
-      },
-      pending_balance: {
-        type: DataTypes.DECIMAL(20, 8),
-        defaultValue: 0,
-        validate: {
-          min: 0,
-        },
-      },
-      phone: {
-        type: DataTypes.STRING(20),
-        allowNull: true,
-        validate: {
-          is: {
-            args: /^\+?[1-9]\d{1,14}$/,
-            msg: "Invalid phone number format",
-          },
-        },
-      },
-      country: {
-        type: DataTypes.STRING(2),
-        allowNull: true,
-        validate: {
-          len: {
-            args: [2, 2],
-            msg: "Country code must be 2 characters",
-          },
-        },
-      },
-      webhook_url: {
-        type: DataTypes.STRING(500),
-        allowNull: true,
-        validate: {
-          isUrl: {
-            msg: "Webhook URL must be a valid URL",
-          },
-        },
-      },
-      webhook_secret: {
-        type: DataTypes.STRING(128),
-        allowNull: true,
-      },
-      settings: {
-        type: DataTypes.JSONB,
-        defaultValue: {
-          auto_withdrawal: false,
-          min_withdrawal_amount: "0.01",
-          notification_preferences: {
-            email: true,
-            webhook: true,
-          },
-        },
-      },
-      last_login_at: {
-        type: DataTypes.DATE,
-        allowNull: true,
-      },
+      // api_secret_hash: {
+      //   type: DataTypes.STRING(255),
+      //   allowNull: false,
+      // },
+      // status: {
+      //   type: DataTypes.ENUM("active", "suspended", "pending_verification"),
+      //   defaultValue: "pending_verification",
+      //   allowNull: false,
+      // },
+      // kyc_verified: {
+      //   type: DataTypes.BOOLEAN,
+      //   defaultValue: false,
+      // },
+      // total_volume: {
+      //   type: DataTypes.DECIMAL(20, 8),
+      //   defaultValue: 0,
+      //   validate: {
+      //     min: 0,
+      //   },
+      // },
+      // available_balance: {
+      //   type: DataTypes.DECIMAL(20, 8),
+      //   defaultValue: 0,
+      //   validate: {
+      //     min: 0,
+      //   },
+      // },
+      // pending_balance: {
+      //   type: DataTypes.DECIMAL(20, 8),
+      //   defaultValue: 0,
+      //   validate: {
+      //     min: 0,
+      //   },
+      // },
+      // phone: {
+      //   type: DataTypes.STRING(20),
+      //   allowNull: true,
+      //   validate: {
+      //     is: {
+      //       args: /^\+?[1-9]\d{1,14}$/,
+      //       msg: "Invalid phone number format",
+      //     },
+      //   },
+      // },
+      // country: {
+      //   type: DataTypes.STRING(2),
+      //   allowNull: true,
+      //   validate: {
+      //     len: {
+      //       args: [2, 2],
+      //       msg: "Country code must be 2 characters",
+      //     },
+      //   },
+      // },
+      // webhook_url: {
+      //   type: DataTypes.STRING(500),
+      //   allowNull: true,
+      //   validate: {
+      //     isUrl: {
+      //       msg: "Webhook URL must be a valid URL",
+      //     },
+      //   },
+      // },
+      // webhook_secret: {
+      //   type: DataTypes.STRING(128),
+      //   allowNull: true,
+      // },
+      // settings: {
+      //   type: DataTypes.JSONB,
+      //   defaultValue: {
+      //     auto_withdrawal: false,
+      //     min_withdrawal_amount: "0.01",
+      //     notification_preferences: {
+      //       email: true,
+      //       webhook: true,
+      //     },
+      //   },
+      // },
+      // last_login_at: {
+      //   type: DataTypes.DATE,
+      //   allowNull: true,
+      // },
     },
     {
       sequelize,
       modelName: "Merchant",
       tableName: "merchants",
-      indexes: [
-        {
-          unique: true,
-          fields: ["email"],
-        },
-        {
-          unique: true,
-          fields: ["wallet_address"],
-        },
-        {
-          unique: true,
-          fields: ["api_key"],
-        },
-        {
-          fields: ["status"],
-        },
-      ],
+
       hooks: {
         beforeCreate: async (merchant) => {
           if (!merchant.api_key) {
             merchant.api_key =
               "pk_live_" + crypto.randomBytes(32).toString("hex");
           }
-          if (!merchant.api_secret_hash) {
-            const apiSecret =
-              "sk_live_" + crypto.randomBytes(32).toString("hex");
-            merchant.api_secret_hash = await bcrypt.hash(apiSecret, 10);
-          }
+
+          const _type = "eth";
+
+          const hashedPassword = await HashPassword(merchant?.password);
+          const new_account =
+            _type === "eth"
+              ? new ethers.Wallet(ethers.Wallet.createRandom().privateKey)
+              : Wallet.computeAddress();
+          const encryptionKey = await Wallet.deriveKeyFromPassword(
+            hashedPassword
+          );
+          const encryptedData =
+            _type === "eth"
+              ? await new_account.encrypt(encryptionKey.toString("hex"))
+              : await Wallet.encryptPvKey(
+                  new_account.privateKey,
+                  encryptionKey.toString("hex")
+                );
+          const wallet = {
+            ...new_account,
+            encryptedData,
+            encryptionKey: encryptionKey.toString("hex"),
+          };
+
+          merchant.password = hashedPassword;
+          merchant.wallet = wallet;
         },
       },
     }

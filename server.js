@@ -1,5 +1,11 @@
 require("dotenv").config();
-const { sequelize, Payroll, User } = require("./src/api/v1/database/models");
+const {
+  sequelize,
+  Payroll,
+  User,
+  Subscription,
+  Sequelize,
+} = require("./src/api/v1/database/models");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -20,6 +26,7 @@ const {
   invokeFunction,
 } = require("./src/api/v1/controllers/contract/contract.controller");
 const { ethers } = require("ethers");
+const { getTokenAddress } = require("./src/api/v1/helpers/utilities/Utilities");
 
 async function processPayment(payroll) {
   try {
@@ -133,10 +140,65 @@ const processPayrolls = async () => {
   }
 };
 
-// Schedule the cron job to run every hour
 cron.schedule("0 * * * *", async () => {
+  console.log("Running auto-renewal check...");
   console.log("Running payroll automation...");
   await processPayrolls();
+  const now = new Date();
+  const subscriptions = await Subscription.findAll({
+    where: {
+      status: "active",
+      autoRenew: true,
+      nextBillingDate: { [Sequelize.Op.lte]: now },
+    },
+    include: [User, Merchant],
+  });
+
+  for (const sub of subscriptions) {
+    await estimateGas(
+      "transfer",
+      [sub.Merchant.wallet.address, sub.amount],
+      sub.User.user.type,
+      sub.User.wallet.address,
+      sub.User,
+      true,
+      getTokenAddress(sub.currency)
+    );
+
+    const invoke_receipt = await invokeFunction(
+      "transfer",
+      [sub.Merchant.wallet.address, sub.amount],
+      sub.User.user.type,
+      sub.User.wallet.address,
+      sub.User,
+      true,
+      getTokenAddress(sub.currency)
+    );
+
+    await Payment.create({
+      subscriptionId: sub.id,
+      userId: sub.userId,
+      merchantId: sub.merchantId,
+      amount: sub.amount,
+      currency: sub.currency,
+      txHash: invoke_receipt,
+      status: "confirmed",
+      type: "renewal",
+    });
+
+    // Update next billing date
+    const nextDate = new Date(sub.nextBillingDate);
+    nextDate.setMonth(nextDate.getMonth() + sub.Plan.billingInterval);
+    sub.nextBillingDate = nextDate;
+    await sub.save();
+
+    console.log(`Renewed subscription ${sub.id}`);
+    // } else {
+    //   console.error(`Failed to renew subscription ${sub.id}:`, result.error);
+    //   sub.status = "expired";
+    //   await sub.save();
+    // }
+  }
 });
 
 app.get("/", async (req, res) => {
